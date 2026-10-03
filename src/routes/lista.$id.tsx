@@ -16,9 +16,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/lista/$id")({
   head: () => ({
     meta: [
-      { title: "Lista — Minhas Listas" },
+      { title: "Lista — Listta" },
       { name: "description", content: "Veja, marque e organize as tarefas desta lista." },
-      { property: "og:title", content: "Lista — Minhas Listas" },
+      { property: "og:title", content: "Lista — Listta" },
       { property: "og:description", content: "Veja, marque e organize as tarefas desta lista." },
     ],
   }),

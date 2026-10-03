@@ -18,15 +18,23 @@ export type TaskList = {
   id: string;
   name: string;
   tasks: Task[];
+  groupId?: string | undefined;
   createdAt: number;
 };
+
+export type Group = { id: string; name: string; createdAt: number };
 
 export type TaskInput = Pick<Task, "title"> & Partial<Pick<Task, "important" | "date" | "time" | "note">>;
 
 type State = {
   lists: TaskList[];
+  groups: Group[];
   theme: "light" | "dark";
-  addList: (name: string) => string;
+  addList: (name: string, groupId?: string) => string;
+  addGroup: (name: string) => string;
+  renameGroup: (id: string, name: string) => void;
+  deleteGroup: (id: string) => void;
+  setListGroup: (listId: string, groupId: string | undefined) => void;
   renameList: (id: string, name: string) => void;
   deleteList: (id: string) => void;
   addTask: (listId: string, input: TaskInput) => void;
@@ -45,12 +53,26 @@ export const useStore = create<State>()(
   persist(
     (set) => ({
       lists: [],
+      groups: [],
       theme: "light",
-      addList: (name) => {
+      addList: (name, groupId) => {
         const id = uid();
-        set((s) => ({ lists: [...s.lists, { id, name, tasks: [], createdAt: Date.now() }] }));
+        set((s) => ({ lists: [...s.lists, { id, name, tasks: [], groupId, createdAt: Date.now() }] }));
         return id;
       },
+      addGroup: (name) => {
+        const id = uid();
+        set((s) => ({ groups: [...s.groups, { id, name, createdAt: Date.now() }] }));
+        return id;
+      },
+      renameGroup: (id, name) => set((s) => ({ groups: s.groups.map((g) => (g.id === id ? { ...g, name } : g)) })),
+      deleteGroup: (id) =>
+        set((s) => ({
+          groups: s.groups.filter((g) => g.id !== id),
+          lists: s.lists.map((l) => (l.groupId === id ? { ...l, groupId: undefined } : l)),
+        })),
+      setListGroup: (listId, groupId) =>
+        set((s) => ({ lists: mapList(s.lists, listId, (l) => ({ ...l, groupId })) })),
       renameList: (id, name) => set((s) => ({ lists: mapList(s.lists, id, (l) => ({ ...l, name })) })),
       deleteList: (id) => set((s) => ({ lists: s.lists.filter((l) => l.id !== id) })),
       addTask: (listId, input) =>
@@ -88,7 +110,7 @@ export const useStore = create<State>()(
         })),
       toggleTheme: () => set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
     }),
-    { name: "minhas-listas-v1", skipHydration: true },
+    { name: "minhas-listas-v1", skipHydration: true, merge: (p, c) => ({ ...c, ...(p as object), groups: (p as Partial<State>)?.groups ?? [] }) },
   ),
 );
 

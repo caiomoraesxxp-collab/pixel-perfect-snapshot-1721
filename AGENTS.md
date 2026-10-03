@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- App data lives in a zustand store persisted to localStorage (src/lib/store.ts, skipHydration + rehydrate in root) — offline-first, no backend yet.

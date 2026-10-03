@@ -16,7 +16,7 @@ export function TaskSheet({
   onOpenChange: (o: boolean) => void;
   task?: Task | null;
   onSave: (input: TaskInput) => void;
-  onDelete?: () => void;
+  onDelete?: (() => void) | undefined;
 }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");

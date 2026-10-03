@@ -9,7 +9,7 @@ export function NameDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   title: string;
-  initial?: string;
+  initial?: string | undefined;
   confirmLabel?: string;
   onSubmit: (name: string) => void;
 }) {

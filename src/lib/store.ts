@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -91,18 +92,11 @@ export const useStore = create<State>()(
   ),
 );
 
-export const useHydrated = () => {
-  const [h, setH] = useStateHydrated();
-  return h || setH;
-};
-
-// small helper so components can wait for local data before rendering
-import { useEffect, useState } from "react";
-function useStateHydrated(): [boolean, false] {
-  const [h, setH] = useState(useStore.persist.hasHydrated());
+export function useHydrated() {
+  const [h, setH] = useState(false);
   useEffect(() => {
     if (useStore.persist.hasHydrated()) setH(true);
     return useStore.persist.onFinishHydration(() => setH(true));
   }, []);
-  return [h, false];
+  return h;
 }

@@ -7,9 +7,9 @@ export type Task = {
   title: string;
   done: boolean;
   important: boolean;
-  date?: string; // yyyy-mm-dd
-  time?: string; // hh:mm
-  note?: string;
+  date?: string | undefined;
+  time?: string | undefined;
+  note?: string | undefined;
   notified?: boolean;
   createdAt: number;
 };

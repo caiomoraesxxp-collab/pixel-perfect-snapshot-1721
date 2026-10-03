@@ -58,8 +58,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#2f8f86" },
-      { title: "Minhas Listas" },
+      { name: "theme-color", content: "#e8730c" },
+      { title: "Listta" },
       { name: "description", content: "Listas de tarefas simples, rápidas e offline." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

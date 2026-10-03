@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export function NameDialog({
-  open, onOpenChange, title, initial = "", confirmLabel = "Salvar", onSubmit,
+  open, onOpenChange, title, initial = "", confirmLabel = "Salvar", placeholder = "Nome da lista", onSubmit,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   title: string;
   initial?: string | undefined;
   confirmLabel?: string;
+  placeholder?: string;
   onSubmit: (name: string) => void;
 }) {
   const [value, setValue] = useState(initial);
@@ -28,7 +29,7 @@ export function NameDialog({
         <Input
           autoFocus value={value} onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="Nome da lista" className="h-12 text-base"
+          placeholder={placeholder} className="h-12 text-base"
         />
         <DialogFooter className="gap-2">
           <Button variant="ghost" className="h-11" onClick={() => onOpenChange(false)}>Cancelar</Button>

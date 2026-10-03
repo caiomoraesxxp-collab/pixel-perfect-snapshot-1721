@@ -201,7 +201,7 @@ function TaskRow({ task, canDrag, onToggle, onStar, onOpen }: {
         className={cn("grid h-12 w-12 shrink-0 place-items-center", !canDrag && "ml-1")}
       >
         <span className={cn("grid h-7 w-7 place-items-center rounded-full border-2 transition-colors",
-          task.done ? "animate-pop border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50")}>
+          task.done ? "animate-pop border-success bg-success text-primary-foreground" : "border-muted-foreground/50")}>
           {task.done && <Check className="h-4 w-4" strokeWidth={3} />}
         </span>
       </button>

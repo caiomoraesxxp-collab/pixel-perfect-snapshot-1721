@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GrupoIdRouteImport } from './routes/grupo.$id'
 import { Route as ListaIdRouteImport } from './routes/lista.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrupoIdRoute = GrupoIdRouteImport.update({
+  id: '/grupo/$id',
+  path: '/grupo/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ListaIdRoute = ListaIdRouteImport.update({
@@ -25,27 +31,31 @@ const ListaIdRoute = ListaIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lista/$id'
+  fullPaths: '/' | '/grupo/$id' | '/lista/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lista/$id'
-  id: '__root__' | '/' | '/lista/$id'
+  to: '/' | '/grupo/$id' | '/lista/$id'
+  id: '__root__' | '/' | '/grupo/$id' | '/lista/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GrupoIdRoute: typeof GrupoIdRoute
   ListaIdRoute: typeof ListaIdRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grupo/$id': {
+      id: '/grupo/$id'
+      path: '/grupo/$id'
+      fullPath: '/grupo/$id'
+      preLoaderRoute: typeof GrupoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lista/$id': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GrupoIdRoute: GrupoIdRoute,
   ListaIdRoute: ListaIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -82,7 +82,7 @@ export const useStore = create<State>()(
             const to = tasks.findIndex((t) => t.id === toId);
             if (from < 0 || to < 0) return l;
             const [item] = tasks.splice(from, 1);
-            tasks.splice(to, 0, item);
+            tasks.splice(to, 0, item!);
             return { ...l, tasks };
           }),
         })),

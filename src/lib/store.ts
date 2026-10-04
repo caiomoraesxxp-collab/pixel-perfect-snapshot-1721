@@ -11,6 +11,9 @@ export type Task = {
   time?: string | undefined;
   note?: string | undefined;
   notified?: boolean;
+  absent?: boolean | undefined;
+  shift?: "manha" | "tarde" | "noite" | undefined;
+  attDate?: string | undefined;
   createdAt: number;
 };
 
@@ -24,7 +27,7 @@ export type TaskList = {
 
 export type Group = { id: string; name: string; createdAt: number };
 
-export type TaskInput = Pick<Task, "title"> & Partial<Pick<Task, "important" | "date" | "time" | "note">>;
+export type TaskInput = Pick<Task, "title"> & Partial<Pick<Task, "important" | "date" | "time" | "note" | "shift" | "attDate">>;
 
 type State = {
   lists: TaskList[];

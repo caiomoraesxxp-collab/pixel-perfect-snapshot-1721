@@ -49,7 +49,7 @@ export function TaskSheet({
         </SheetHeader>
         <div className="space-y-4">
           <Input
-            autoFocus value={title} onChange={(e) => setTitle(e.target.value)}
+            autoFocus value={title} onChange={(e) => setTitle(e.target.value.toLocaleUpperCase("pt-BR"))}
             onKeyDown={(e) => e.key === "Enter" && save()}
             placeholder="Nome da tarefa" className="h-12 text-base"
           />

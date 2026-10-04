@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as GrupoIdRouteImport } from './routes/grupo.$id'
 import { Route as ListaIdRouteImport } from './routes/lista.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GrupoIdRoute = GrupoIdRouteImport.update({
@@ -31,30 +37,34 @@ const ListaIdRoute = ListaIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/grupo/$id' | '/lista/$id'
+  fullPaths: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/grupo/$id' | '/lista/$id'
-  id: '__root__' | '/' | '/grupo/$id' | '/lista/$id'
+  to: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
+  id: '__root__' | '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   GrupoIdRoute: typeof GrupoIdRoute
   ListaIdRoute: typeof ListaIdRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grupo/$id': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RelatoriosRoute: RelatoriosRoute,
   GrupoIdRoute: GrupoIdRoute,
   ListaIdRoute: ListaIdRoute,
 }

@@ -5,6 +5,7 @@ import { useStore, useHydrated, type Task } from "@/lib/store";
 import { SCHOOLS, SHIFTS, STATUS_LABEL, fmtDate, shiftLabel, statusOf, today, type Shift } from "@/lib/schools";
 import { buildPdf, downloadPdf, sharePdf, type PdfSection } from "@/lib/pdf";
 import { cn } from "@/lib/utils";
+import { StatusPill } from "@/components/StatusPill";
 
 export const Route = createFileRoute("/relatorios")({
   head: () => ({
@@ -145,14 +146,5 @@ function Reports() {
         </button>
       </div>
     </div>
-  );
-}
-
-export function StatusPill({ s }: { s: "espera" | "atendido" | "faltou" }) {
-  return (
-    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-      s === "atendido" && "bg-success text-primary-foreground",
-      s === "faltou" && "bg-destructive text-destructive-foreground",
-      s === "espera" && "bg-muted text-foreground")}>{STATUS_LABEL[s]}</span>
   );
 }

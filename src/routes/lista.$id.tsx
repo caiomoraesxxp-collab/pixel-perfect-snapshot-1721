@@ -12,6 +12,8 @@ import { NameDialog } from "@/components/NameDialog";
 import { TaskSheet } from "@/components/TaskSheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
+import { SHIFTS, statusOf, today, type Shift, type Status } from "@/lib/schools";
+import { StatusPill } from "@/components/StatusPill";
 
 export const Route = createFileRoute("/lista/$id")({
   head: () => ({
@@ -25,11 +27,12 @@ export const Route = createFileRoute("/lista/$id")({
   component: ListPage,
 });
 
-type Filter = "all" | "pending" | "done" | "important";
+type Filter = "all" | Status | "important";
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "Todas" },
-  { key: "pending", label: "Pendentes" },
-  { key: "done", label: "Concluídas" },
+  { key: "all", label: "Todos" },
+  { key: "espera", label: "Em espera" },
+  { key: "atendido", label: "Atendidos" },
+  { key: "faltou", label: "Faltou" },
   { key: "important", label: "Importantes" },
 ];
 
@@ -41,6 +44,7 @@ function ListPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [quick, setQuick] = useState("");
+  const [shift, setShift] = useState<Shift>(() => (new Date().getHours() < 12 ? "manha" : new Date().getHours() < 18 ? "tarde" : "noite"));
   const [renaming, setRenaming] = useState(false);
   const [sheet, setSheet] = useState<{ open: boolean; task: Task | null }>({ open: false, task: null });
 
@@ -54,8 +58,7 @@ function ListPage() {
     if (!list) return [];
     const q = query.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/\p{Diacritic}/gu, "");
     return list.tasks.filter((t) => {
-      if (filter === "pending" && t.done) return false;
-      if (filter === "done" && !t.done) return false;
+      if ((filter === "espera" || filter === "atendido" || filter === "faltou") && statusOf(t) !== filter) return false;
       if (filter === "important" && !t.important) return false;
       if (q && !t.title.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/\p{Diacritic}/gu, "").includes(q)) return false;
       return true;
@@ -79,16 +82,21 @@ function ListPage() {
   const submitQuick = () => {
     const t = quick.trim();
     if (!t) return;
-    addTask(list.id, { title: t, important: filter === "important" });
+    addTask(list.id, { title: t.toLocaleUpperCase("pt-BR"), important: filter === "important", shift, attDate: today() });
     setQuick("");
   };
 
   const toggle = (t: Task) => {
-    updateTask(list.id, t.id, { done: !t.done });
-    if (!t.done) toast.success("Tarefa concluída", { duration: 1500 });
+    updateTask(list.id, t.id, { done: !t.done, absent: false });
+    if (!t.done) toast.success("Atendido", { duration: 1500 });
   };
 
-  const done = list.tasks.filter((t) => t.done).length;
+  const cycle = (t: Task) => {
+    const next: Status = { espera: "atendido", atendido: "faltou", faltou: "espera" }[statusOf(t)] as Status;
+    updateTask(list.id, t.id, { done: next === "atendido", absent: next === "faltou" });
+  };
+  const c = { total: list.tasks.length, espera: 0, atendido: 0, faltou: 0 };
+  list.tasks.forEach((t) => c[statusOf(t)]++);
   const canDrag = !query && filter === "all";
 
   return (
@@ -98,15 +106,26 @@ function ListPage() {
           <Link to="/" aria-label="Voltar" className="grid h-11 w-11 place-items-center rounded-full hover:bg-muted"><ArrowLeft className="h-6 w-6" /></Link>
           <div className="min-w-0 px-1">
             <h1 className="truncate text-2xl font-bold tracking-tight">{list.name}</h1>
-            <p className="text-sm text-muted-foreground">{done} de {list.tasks.length} concluídas</p>
+            <p className="text-sm text-muted-foreground">{c.atendido} de {c.total} atendidos</p>
           </div>
           <button aria-label="Editar nome" onClick={() => setRenaming(true)} className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:bg-muted"><Pencil className="h-5 w-5" /></button>
           <ThemeToggle />
         </div>
+        <div className="mt-3 grid grid-cols-4 gap-2 px-1 text-center">
+          {([["Total", c.total, "bg-muted"], ["Em espera", c.espera, "bg-accent text-accent-foreground"], ["Atendidos", c.atendido, "bg-success text-primary-foreground"], ["Faltou", c.faltou, "bg-destructive text-destructive-foreground"]] as const).map(([l, n, k]) => (
+            <div key={l} className={cn("rounded-xl py-1.5", k)}><p className="text-lg font-bold leading-tight">{n}</p><p className="text-[11px]">{l}</p></div>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2 px-1">
+          {SHIFTS.map((x) => (
+            <button key={x.key} onClick={() => setShift(x.key)} className={cn("h-9 flex-1 rounded-xl text-sm font-medium",
+              shift === x.key ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground")}>{x.label}</button>
+          ))}
+        </div>
         <div className="relative mt-3 px-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <input
-            value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pesquisar..."
+            value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pesquisar aluno..."
             className="h-12 w-full rounded-xl bg-muted pl-11 pr-4 text-base outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -124,7 +143,7 @@ function ListPage() {
       <main className="px-3">
         {visible.length === 0 && (
           <p className="mt-16 text-center text-muted-foreground">
-            {query ? "Nenhum resultado encontrado." : list.tasks.length ? "Nada por aqui neste filtro." : "Adicione a primeira tarefa abaixo."}
+            {query ? "Nenhum resultado encontrado." : list.tasks.length ? "Nada por aqui neste filtro." : "Adicione o primeiro aluno abaixo."}
           </p>
         )}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -134,6 +153,7 @@ function ListPage() {
                 <TaskRow
                   key={t.id} task={t} canDrag={canDrag}
                   onToggle={() => toggle(t)}
+                  onCycle={() => cycle(t)}
                   onStar={() => updateTask(list.id, t.id, { important: !t.important })}
                   onOpen={() => setSheet({ open: true, task: t })}
                 />
@@ -149,8 +169,8 @@ function ListPage() {
             <Plus className="h-6 w-6" />
           </button>
           <input
-            value={quick} onChange={(e) => setQuick(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitQuick()}
-            placeholder="Adicionar tarefa" enterKeyHint="done"
+            value={quick} onChange={(e) => setQuick(e.target.value.toLocaleUpperCase("pt-BR"))} onKeyDown={(e) => e.key === "Enter" && submitQuick()}
+            placeholder="+ Adicionar aluno" enterKeyHint="done"
             className="h-11 min-w-0 flex-1 bg-transparent px-2 text-base outline-none"
           />
           {quick.trim() && (
@@ -159,13 +179,14 @@ function ListPage() {
         </div>
       </div>
 
-      <NameDialog open={renaming} onOpenChange={setRenaming} title="Editar lista" initial={list.name} onSubmit={(n) => renameList(list.id, n)} />
+      <NameDialog open={renaming} onOpenChange={setRenaming} title="Editar escola" initial={list.name} onSubmit={(n) => renameList(list.id, n)} />
       <TaskSheet
         open={sheet.open} task={sheet.task}
         onOpenChange={(o) => setSheet((s) => ({ ...s, open: o }))}
         onSave={(input) => {
-          if (sheet.task) updateTask(list.id, sheet.task.id, { ...input, notified: false });
-          else addTask(list.id, input);
+          const up = { ...input, title: input.title.toLocaleUpperCase("pt-BR") };
+          if (sheet.task) updateTask(list.id, sheet.task.id, { ...up, notified: false });
+          else addTask(list.id, { ...up, shift, attDate: today() });
         }}
         onDelete={sheet.task ? () => deleteTask(list.id, sheet.task!.id) : undefined}
       />
@@ -180,8 +201,8 @@ function formatDue(t: Task) {
   return t.time ? `${s}, ${t.time}` : s;
 }
 
-function TaskRow({ task, canDrag, onToggle, onStar, onOpen }: {
-  task: Task; canDrag: boolean; onToggle: () => void; onStar: () => void; onOpen: () => void;
+function TaskRow({ task, canDrag, onToggle, onCycle, onStar, onOpen }: {
+  task: Task; canDrag: boolean; onToggle: () => void; onCycle: () => void; onStar: () => void; onOpen: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: !canDrag });
   const due = formatDue(task);
@@ -189,7 +210,7 @@ function TaskRow({ task, canDrag, onToggle, onStar, onOpen }: {
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn("flex items-center gap-1 rounded-2xl bg-card pr-1 shadow-soft transition-opacity", isDragging && "z-20 opacity-80 ring-2 ring-primary", task.done && "opacity-70")}
+      className={cn("flex items-center gap-1 rounded-2xl bg-card pr-1 shadow-soft transition-opacity", isDragging && "z-20 opacity-80 ring-2 ring-primary", task.done && "opacity-70", task.absent && !task.done && "border-l-4 border-destructive")}
     >
       {canDrag && (
         <button aria-label="Arrastar" {...attributes} {...listeners} className="grid h-14 w-8 shrink-0 touch-none place-items-center text-muted-foreground/60">
@@ -214,6 +235,7 @@ function TaskRow({ task, canDrag, onToggle, onStar, onOpen }: {
           </p>
         )}
       </button>
+      <StatusPill s={statusOf(task)} onClick={onCycle} />
       <button aria-label="Importante" onClick={onStar} className="grid h-12 w-12 shrink-0 place-items-center">
         <Star className={cn("h-6 w-6 transition-colors", task.important ? "animate-pop fill-star text-star" : "text-muted-foreground/60")} />
       </button>

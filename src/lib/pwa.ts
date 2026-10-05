@@ -16,8 +16,11 @@ export async function setupServiceWorker() {
     return;
   }
   try {
-    const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-    // Cache the current page shell + the other main pages for offline use.
-    reg.active && ["/", "/relatorios"].forEach((p) => fetch(p).catch(() => {}));
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    await navigator.serviceWorker.ready;
+    // Warm the page cache so main screens and saved schools open without internet.
+    const { useStore } = await import("./store");
+    const paths = ["/", "/relatorios", ...useStore.getState().lists.map((l) => `/lista/${l.id}`)];
+    paths.forEach((p) => fetch(p, { mode: "same-origin", headers: { accept: "text/html" } }).catch(() => {}));
   } catch { /* ignore */ }
 }

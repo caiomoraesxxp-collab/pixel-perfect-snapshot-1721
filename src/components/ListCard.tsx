@@ -19,7 +19,7 @@ export function ListCard({ list: l, index, onEdit, onDelete }: {
       <Link to="/lista/$id" params={{ id: l.id }} className="min-w-0 flex-1 p-4">
         <h3 className="truncate text-lg font-semibold">{l.name}</h3>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {l.tasks.length} {l.tasks.length === 1 ? "tarefa" : "tarefas"} · {done} concluída{done === 1 ? "" : "s"}
+          {l.tasks.length} {l.tasks.length === 1 ? "aluno" : "alunos"} · {done} atendido{done === 1 ? "" : "s"}
         </p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />

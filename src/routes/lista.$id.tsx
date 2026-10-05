@@ -44,7 +44,7 @@ function ListPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [quick, setQuick] = useState("");
-  const [shift, setShift] = useState<Shift>(() => (new Date().getHours() < 12 ? "manha" : new Date().getHours() < 18 ? "tarde" : "noite"));
+  const [shift, setShift] = useState<Shift>(() => (new Date().getHours() < 12 ? "manha" : "tarde"));
   const [renaming, setRenaming] = useState(false);
   const [sheet, setSheet] = useState<{ open: boolean; task: Task | null }>({ open: false, task: null });
 

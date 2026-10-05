@@ -16,7 +16,7 @@ export const norm = (s: string) => s.toLocaleLowerCase("pt-BR").normalize("NFD")
 
 export type Shift = "manha" | "tarde" | "noite";
 export const SHIFTS: { key: Shift; label: string }[] = [
-  { key: "manha", label: "Manhã" }, { key: "tarde", label: "Tarde" }, { key: "noite", label: "Noite" },
+  { key: "manha", label: "Manhã" }, { key: "tarde", label: "Tarde" },
 ];
 export const shiftLabel = (s?: string) => SHIFTS.find((x) => x.key === s)?.label ?? "—";
 

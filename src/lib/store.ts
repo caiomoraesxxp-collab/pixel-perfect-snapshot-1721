@@ -22,6 +22,7 @@ export type TaskList = {
   name: string;
   tasks: Task[];
   groupId?: string | undefined;
+  shift?: "manha" | "tarde" | "noite" | undefined;
   createdAt: number;
 };
 
@@ -39,6 +40,7 @@ type State = {
   deleteGroup: (id: string) => void;
   setListGroup: (listId: string, groupId: string | undefined) => void;
   renameList: (id: string, name: string) => void;
+  setListShift: (id: string, shift: "manha" | "tarde") => void;
   deleteList: (id: string) => void;
   addTask: (listId: string, input: TaskInput) => void;
   updateTask: (listId: string, taskId: string, patch: Partial<Task>) => void;
@@ -77,6 +79,7 @@ export const useStore = create<State>()(
       setListGroup: (listId, groupId) =>
         set((s) => ({ lists: mapList(s.lists, listId, (l) => ({ ...l, groupId })) })),
       renameList: (id, name) => set((s) => ({ lists: mapList(s.lists, id, (l) => ({ ...l, name })) })),
+      setListShift: (id, shift) => set((s) => ({ lists: mapList(s.lists, id, (l) => ({ ...l, shift })) })),
       deleteList: (id) => set((s) => ({ lists: s.lists.filter((l) => l.id !== id) })),
       addTask: (listId, input) =>
         set((s) => ({

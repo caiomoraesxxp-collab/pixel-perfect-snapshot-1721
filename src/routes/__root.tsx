@@ -100,6 +100,7 @@ function RootComponent() {
 
   useEffect(() => {
     useStore.persist.rehydrate();
+    void import("../lib/pwa").then((m) => m.setupServiceWorker());
     return startReminderLoop();
   }, []);
 

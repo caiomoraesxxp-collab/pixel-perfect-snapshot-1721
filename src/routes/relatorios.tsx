@@ -38,9 +38,9 @@ function Reports() {
   const [school, setSchool] = useState(SCHOOLS[0]!);
   const [shift, setShift] = useState<Shift>("manha");
 
-  const byDate = (ts: Task[]) => ts.filter((t) => (t.attDate ?? "") === date);
+  const byDate = (ts: Task[], ls?: Task["shift"]) => ts.filter((t) => (t.attDate ?? "") === date).map((t) => (ls ? { ...t, shift: ls } : t));
   const schools = useMemo(
-    () => lists.map((l) => ({ name: l.name, tasks: byDate(l.tasks) })).filter((s) => s.tasks.length),
+    () => lists.map((l) => ({ name: l.name, tasks: byDate(l.tasks, l.shift) })).filter((s) => s.tasks.length),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lists, date],
   );
@@ -49,7 +49,7 @@ function Reports() {
   let title = "";
   if (tab === "escola") {
     const l = lists.find((x) => x.name === school);
-    sections = [{ name: school, tasks: l ? byDate(l.tasks) : [] }];
+    sections = [{ name: school, tasks: l ? byDate(l.tasks, l.shift) : [] }];
     title = "Relatório por escola";
   } else if (tab === "turno") {
     sections = schools.map((s) => ({ ...s, tasks: s.tasks.filter((t) => t.shift === shift) })).filter((s) => s.tasks.length);

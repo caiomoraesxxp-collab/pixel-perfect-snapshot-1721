@@ -44,7 +44,7 @@ function ListPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [quick, setQuick] = useState("");
-  const [shift, setShift] = useState<Shift>(() => (new Date().getHours() < 12 ? "manha" : "tarde"));
+  const [autoShift] = useState<Shift>(() => (new Date().getHours() < 12 ? "manha" : "tarde"));
   const [renaming, setRenaming] = useState(false);
   const [sheet, setSheet] = useState<{ open: boolean; task: Task | null }>({ open: false, task: null });
 
@@ -54,6 +54,8 @@ function ListPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const shift: Shift = list?.shift === "manha" || list?.shift === "tarde" ? list.shift : autoShift;
+  const setShift = (s: Shift) => { if (list) useStore.getState().setListShift(list.id, s as "manha" | "tarde"); };
   const visible = useMemo(() => {
     if (!list) return [];
     const q = query.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/\p{Diacritic}/gu, "");

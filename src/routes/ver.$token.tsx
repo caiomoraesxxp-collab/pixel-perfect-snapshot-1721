@@ -32,8 +32,9 @@ function Viewer() {
     refetchIntervalInBackground: false,
     retry: false,
   });
-  const lists = ((q.data?.found && q.data.data.lists) || []) as TaskList[];
-  const groups = ((q.data?.found && q.data.data.groups) || []) as Group[];
+  const parsed = (q.data?.found ? JSON.parse(q.data.json) : {}) as { lists?: TaskList[]; groups?: Group[] };
+  const lists = parsed.lists ?? [];
+  const groups = parsed.groups ?? [];
   const gname = (id?: string) => groups.find((g) => g.id === id)?.name;
 
   return (

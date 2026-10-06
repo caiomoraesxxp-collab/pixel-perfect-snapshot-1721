@@ -37,5 +37,5 @@ export const getShare = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin.from("shares").select("data, updated_at").eq("view_token", data.viewToken).maybeSingle();
     if (!row) return { found: false as const };
-    return { found: true as const, data: row.data as unknown as { lists?: unknown[]; groups?: unknown[] }, updatedAt: row.updated_at };
+    return { found: true as const, json: JSON.stringify(row.data ?? {}), updatedAt: row.updated_at };
   });

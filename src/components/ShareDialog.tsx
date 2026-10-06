@@ -25,7 +25,7 @@ export function ShareButton() {
   const link = viewToken ? `${window.location.origin}/ver/${viewToken}` : "";
 
   const generate = async () => {
-    if (!navigator.onLine) return toast.error("Conecte-se à internet para gerar o link.");
+    if (!navigator.onLine) { toast.error("Conecte-se à internet para gerar o link."); return; }
     setBusy(true);
     try {
       const r = await createShare();

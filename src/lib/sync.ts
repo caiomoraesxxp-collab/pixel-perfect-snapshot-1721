@@ -17,6 +17,7 @@ let running = false;
 
 async function flush() {
   const { viewToken, adminToken, dirty } = useShare.getState();
+  if (!useStore.persist.hasHydrated()) { schedule(500); return; }
   if (!viewToken || !adminToken) return useSyncStatus.setState({ s: "off" });
   if (!navigator.onLine) return useSyncStatus.setState({ s: "offline" });
   if (!dirty) return useSyncStatus.setState({ s: "synced" });

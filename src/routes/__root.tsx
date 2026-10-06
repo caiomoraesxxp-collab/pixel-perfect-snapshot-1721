@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useStore } from "../lib/store";
 import { startReminderLoop } from "../lib/notifications";
+import { startSync } from "../lib/sync";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -101,7 +102,9 @@ function RootComponent() {
   useEffect(() => {
     useStore.persist.rehydrate();
     void import("../lib/pwa").then((m) => m.setupServiceWorker());
-    return startReminderLoop();
+    const stopSync = startSync();
+    const stopRem = startReminderLoop();
+    return () => { stopSync(); stopRem?.(); };
   }, []);
 
   useEffect(() => {

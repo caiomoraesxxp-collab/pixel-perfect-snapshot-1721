@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
 import { ListCard } from "@/components/ListCard";
+import { ShareButton, SyncBadge } from "@/components/ShareDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,9 +50,11 @@ function Home() {
         <Logo />
         <div className="flex items-center gap-1">
           <Link to="/relatorios" aria-label="Relatórios" className="flex h-11 items-center gap-1.5 rounded-full bg-secondary px-3 text-sm font-medium text-secondary-foreground"><FileText className="h-4 w-4" /> Relatórios</Link>
+          {hydrated && <ShareButton />}
           <ThemeToggle />
         </div>
       </header>
+      {hydrated && <SyncBadge />}
 
       {hydrated && (
         <main className="space-y-7 px-4">

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as GrupoIdRouteImport } from './routes/grupo.$id'
 import { Route as ListaIdRouteImport } from './routes/lista.$id'
+import { Route as VerTokenRouteImport } from './routes/ver.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const ListaIdRoute = ListaIdRouteImport.update({
   path: '/lista/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerTokenRoute = VerTokenRouteImport.update({
+  id: '/ver/$token',
+  path: '/ver/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
+  '/ver/$token': typeof VerTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
+  '/ver/$token': typeof VerTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
+  '/ver/$token': typeof VerTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
+  fullPaths: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id' | '/ver/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
-  id: '__root__' | '/' | '/relatorios' | '/grupo/$id' | '/lista/$id'
+  to: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id' | '/ver/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/relatorios'
+    | '/grupo/$id'
+    | '/lista/$id'
+    | '/ver/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +82,7 @@ export interface RootRouteChildren {
   RelatoriosRoute: typeof RelatoriosRoute
   GrupoIdRoute: typeof GrupoIdRoute
   ListaIdRoute: typeof ListaIdRoute
+  VerTokenRoute: typeof VerTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ver/$token': {
+      id: '/ver/$token'
+      path: '/ver/$token'
+      fullPath: '/ver/$token'
+      preLoaderRoute: typeof VerTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   RelatoriosRoute: RelatoriosRoute,
   GrupoIdRoute: GrupoIdRoute,
   ListaIdRoute: ListaIdRoute,
+  VerTokenRoute: VerTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

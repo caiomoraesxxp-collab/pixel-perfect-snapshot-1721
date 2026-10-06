@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      shares: {
+        Row: {
+          admin_token_hash: string
+          created_at: string
+          data: Json
+          id: string
+          updated_at: string
+          view_token: string
+        }
+        Insert: {
+          admin_token_hash: string
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          view_token: string
+        }
+        Update: {
+          admin_token_hash?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          view_token?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

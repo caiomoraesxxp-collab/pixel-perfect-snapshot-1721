@@ -96,7 +96,7 @@ export const useStore = create<State>()(
         })),
       setDoctor: (listId, taskId, doctor) =>
         set((s) => ({
-          lists: mapList(s.lists, listId, (l) => ({ ...l, tasks: l.tasks.map((t) => (t.id === taskId ? { ...t, doctor } : t)) })),
+          lists: mapList(s.lists, listId, (l) => ({ ...l, tasks: l.tasks.map((t) => (t.id === taskId && t.done ? { ...t, doctor } : t)) })),
         })),
       addList: (name, groupId) => {
         const id = uid();

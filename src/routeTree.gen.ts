@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as GrupoIdRouteImport } from './routes/grupo.$id'
 import { Route as ListaIdRouteImport } from './routes/lista.$id'
@@ -18,6 +19,11 @@ import { Route as VerTokenRouteImport } from './routes/ver.$token'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
@@ -43,6 +49,7 @@ const VerTokenRoute = VerTokenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/relatorios': typeof RelatoriosRoute
   '/grupo/$id': typeof GrupoIdRoute
   '/lista/$id': typeof ListaIdRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id' | '/ver/$token'
+  fullPaths:
+    | '/'
+    | '/configuracoes'
+    | '/relatorios'
+    | '/grupo/$id'
+    | '/lista/$id'
+    | '/ver/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/relatorios' | '/grupo/$id' | '/lista/$id' | '/ver/$token'
+  to:
+    | '/'
+    | '/configuracoes'
+    | '/relatorios'
+    | '/grupo/$id'
+    | '/lista/$id'
+    | '/ver/$token'
   id:
     | '__root__'
     | '/'
+    | '/configuracoes'
     | '/relatorios'
     | '/grupo/$id'
     | '/lista/$id'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   RelatoriosRoute: typeof RelatoriosRoute
   GrupoIdRoute: typeof GrupoIdRoute
   ListaIdRoute: typeof ListaIdRoute
@@ -92,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/relatorios': {
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   RelatoriosRoute: RelatoriosRoute,
   GrupoIdRoute: GrupoIdRoute,
   ListaIdRoute: ListaIdRoute,

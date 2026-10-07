@@ -25,9 +25,9 @@ async function flush() {
   running = true;
   useSyncStatus.setState({ s: "syncing" });
   try {
-    const { lists, groups } = useStore.getState();
+    const { lists, groups, doctors } = useStore.getState();
     useShare.getState().set({ dirty: false });
-    await pushShare({ data: { viewToken, adminToken, data: { lists, groups } } });
+    await pushShare({ data: { viewToken, adminToken, data: { lists, groups, doctors } } });
     useSyncStatus.setState({ s: useShare.getState().dirty ? "syncing" : "synced" });
   } catch {
     useShare.getState().set({ dirty: true });
@@ -52,7 +52,7 @@ export function markDirtyAndSync() {
 export function startSync() {
   void Promise.resolve(useShare.persist.rehydrate()).then(() => schedule(0));
   const unsub = useStore.subscribe((s, p) => {
-    if (s.lists === p.lists && s.groups === p.groups) return;
+    if (s.lists === p.lists && s.groups === p.groups && s.doctors === p.doctors) return;
     if (!useShare.getState().viewToken) return;
     useShare.getState().set({ dirty: true });
     schedule();

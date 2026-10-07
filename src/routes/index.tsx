@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, ListChecks, Folder, FolderPlus, ChevronRight, Search, FileText, School } from "lucide-react";
+import { Plus, ListChecks, Folder, FolderPlus, ChevronRight, Search, FileText, School, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SCHOOLS, norm } from "@/lib/schools";
 import { useStore, useHydrated, type TaskList } from "@/lib/store";
@@ -51,6 +51,7 @@ function Home() {
         <div className="flex items-center gap-1">
           <Link to="/relatorios" aria-label="Relatórios" className="flex h-11 items-center gap-1.5 rounded-full bg-secondary px-3 text-sm font-medium text-secondary-foreground"><FileText className="h-4 w-4" /> Relatórios</Link>
           {hydrated && <ShareButton />}
+          <Link to="/configuracoes" aria-label="Configurações" className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-secondary-foreground"><Settings className="h-5 w-5" /></Link>
           <ThemeToggle />
         </div>
       </header>
@@ -100,7 +101,7 @@ function Home() {
               <p className="px-1 text-sm text-muted-foreground">Todas as escolas estão em grupos.</p>
             ) : (
               <div className="space-y-3">
-                {loose.map((l, i) => <ListCard key={l.id} list={l} index={i} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
+                {loose.map((l, i) => <ListCard key={l.id} list={l} index={i} siblings={loose.map((x) => x.id)} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
               </div>
             )}
           </section>

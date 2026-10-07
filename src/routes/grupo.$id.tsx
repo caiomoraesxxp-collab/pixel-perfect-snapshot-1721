@@ -66,7 +66,7 @@ function GroupPage() {
           </button>
         )}
         {lists.length === 0 && <p className="pt-10 text-center text-muted-foreground">Nenhuma lista neste grupo. Toque em + para criar.</p>}
-        {lists.map((l, i) => <ListCard key={l.id} list={l} index={i} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
+        {lists.map((l, i) => <ListCard key={l.id} list={l} index={i} siblings={lists.map((x) => x.id)} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
       </main>
 
       <button onClick={() => setCreating(true)} aria-label="Nova lista no grupo"

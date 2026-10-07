@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Star, Bell } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -10,13 +10,14 @@ import { askNotificationPermission } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
 export function TaskSheet({
-  open, onOpenChange, task, onSave, onDelete,
+  open, onOpenChange, task, onSave, onDelete, extra,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   task?: Task | null;
   onSave: (input: TaskInput) => void;
   onDelete?: (() => void) | undefined;
+  extra?: ReactNode;
 }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -77,6 +78,7 @@ export function TaskSheet({
             <Star className={cn("h-5 w-5", important ? "fill-star text-star" : "text-muted-foreground")} />
             <span className="font-medium">Importante</span>
           </button>
+          {extra}
           <div className="flex gap-2 pt-2">
             {onDelete && (
               <Button variant="ghost" className="h-12 text-destructive" onClick={() => { onDelete(); onOpenChange(false); }}>Excluir</Button>

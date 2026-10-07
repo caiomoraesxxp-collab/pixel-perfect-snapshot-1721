@@ -28,3 +28,7 @@ export const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 export const fmtDate = (iso: string) => new Date(`${iso}T00:00`).toLocaleDateString("pt-BR");
+
+export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+export const doctorName = (doctors: string[], i?: number) =>
+  i === undefined ? "" : doctors[i]?.trim() || `Médico ${i + 1}`;

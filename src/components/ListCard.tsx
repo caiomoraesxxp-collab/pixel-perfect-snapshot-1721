@@ -1,30 +1,38 @@
 import { Link } from "@tanstack/react-router";
-import { MoreVertical, Pencil, Trash2, FolderInput, FolderMinus, Folder } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, FolderInput, FolderMinus, Folder, ChevronUp, ChevronDown } from "lucide-react";
 import { useStore, type TaskList } from "@/lib/store";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-export function ListCard({ list: l, index, onEdit, onDelete }: {
-  list: TaskList; index: number; onEdit: () => void; onDelete: () => void;
+export function ListCard({ list: l, index, onEdit, onDelete, siblings }: {
+  list: TaskList; index: number; onEdit: () => void; onDelete: () => void; siblings?: string[];
 }) {
+  const moveList = useStore((s) => s.moveList);
   const groups = useStore((s) => s.groups);
   const setListGroup = useStore((s) => s.setListGroup);
   const done = l.tasks.filter((t) => t.done).length;
-  const pct = l.tasks.length ? (done / l.tasks.length) * 100 : 0;
+  const total = l.tasks.filter((t) => t.done || !t.absent).length;
+  const pct = total ? (done / total) * 100 : 0;
   const others = groups.filter((g) => g.id !== l.groupId);
   return (
     <div className="animate-rise flex items-center rounded-2xl bg-card shadow-soft" style={{ animationDelay: `${index * 30}ms` }}>
       <Link to="/lista/$id" params={{ id: l.id }} className="min-w-0 flex-1 p-4">
         <h3 className="truncate text-lg font-semibold">{l.name}</h3>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {l.tasks.length} {l.tasks.length === 1 ? "aluno" : "alunos"} · {done} atendido{done === 1 ? "" : "s"}
+          {total} {total === 1 ? "aluno" : "alunos"} · {done} atendido{done === 1 ? "" : "s"}
         </p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
       </Link>
+      {siblings && siblings.length > 1 && (
+        <div className="flex flex-col">
+          <button aria-label="Mover para cima" disabled={index === 0} onClick={() => moveList(l.id, -1, siblings)} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground disabled:opacity-30"><ChevronUp className="h-5 w-5" /></button>
+          <button aria-label="Mover para baixo" disabled={index === siblings.length - 1} onClick={() => moveList(l.id, 1, siblings)} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground disabled:opacity-30"><ChevronDown className="h-5 w-5" /></button>
+        </div>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="Opções" className="mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted">
           <MoreVertical className="h-5 w-5" />

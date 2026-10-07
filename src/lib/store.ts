@@ -14,6 +14,7 @@ export type Task = {
   absent?: boolean | undefined;
   shift?: "manha" | "tarde" | "noite" | undefined;
   attDate?: string | undefined;
+  doctor?: number | undefined;
   createdAt: number;
 };
 
@@ -34,6 +35,11 @@ type State = {
   lists: TaskList[];
   groups: Group[];
   theme: "light" | "dark";
+  doctors: string[];
+  setDoctors: (names: string[]) => void;
+  moveList: (id: string, dir: -1 | 1, ids: string[]) => void;
+  setStatus: (listId: string, taskId: string, st: "espera" | "atendido" | "faltou") => void;
+  setDoctor: (listId: string, taskId: string, doctor: number | undefined) => void;
   addList: (name: string, groupId?: string) => string;
   addGroup: (name: string) => string;
   renameGroup: (id: string, name: string) => void;
@@ -60,6 +66,38 @@ export const useStore = create<State>()(
       lists: [],
       groups: [],
       theme: "light",
+      doctors: ["", "", ""],
+      setDoctors: (names) => set({ doctors: names }),
+      moveList: (id, dir, ids) =>
+        set((s) => {
+          const i = ids.indexOf(id);
+          const other = ids[i + dir];
+          if (i < 0 || !other) return s;
+          const lists = [...s.lists];
+          const a = lists.findIndex((l) => l.id === id);
+          const b = lists.findIndex((l) => l.id === other);
+          [lists[a], lists[b]] = [lists[b]!, lists[a]!];
+          return { lists };
+        }),
+      setStatus: (listId, taskId, st) =>
+        set((s) => ({
+          lists: mapList(s.lists, listId, (l) => {
+            const t = l.tasks.find((x) => x.id === taskId);
+            if (!t) return l;
+            const nt: Task = { ...t, done: st === "atendido", absent: st === "faltou", doctor: st === "atendido" ? t.doctor : undefined };
+            const rank = (x: Task) => (x.done ? 1 : x.absent ? 2 : 0);
+            const rest = l.tasks.filter((x) => x.id !== taskId);
+            const r = rank(nt);
+            let pos = rest.length;
+            for (let k = 0; k < rest.length; k++) if (rank(rest[k]!) > r) { pos = k; break; }
+            rest.splice(pos, 0, nt);
+            return { ...l, tasks: rest };
+          }),
+        })),
+      setDoctor: (listId, taskId, doctor) =>
+        set((s) => ({
+          lists: mapList(s.lists, listId, (l) => ({ ...l, tasks: l.tasks.map((t) => (t.id === taskId && t.done ? { ...t, doctor } : t)) })),
+        })),
       addList: (name, groupId) => {
         const id = uid();
         set((s) => ({ lists: [...s.lists, { id, name, tasks: [], groupId, createdAt: Date.now() }] }));
@@ -116,7 +154,7 @@ export const useStore = create<State>()(
         })),
       toggleTheme: () => set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
     }),
-    { name: "minhas-listas-v1", skipHydration: true, merge: (p, c) => ({ ...c, ...(p as object), groups: (p as Partial<State>)?.groups ?? [] }) },
+    { name: "minhas-listas-v1", skipHydration: true, merge: (p, c) => ({ ...c, ...(p as object), groups: (p as Partial<State>)?.groups ?? [], doctors: (p as Partial<State>)?.doctors ?? ["", "", ""] }) },
   ),
 );
 

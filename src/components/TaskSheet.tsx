@@ -10,7 +10,7 @@ import { askNotificationPermission } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
 export function TaskSheet({
-  open, onOpenChange, task, onSave, onDelete,
+  open, onOpenChange, task, onSave, onDelete, extra,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;

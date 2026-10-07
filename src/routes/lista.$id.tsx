@@ -6,14 +6,14 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { toast } from "sonner";
 import { useStore, useHydrated, type Task } from "@/lib/store";
 import { NameDialog } from "@/components/NameDialog";
 import { TaskSheet } from "@/components/TaskSheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { SHIFTS, statusOf, today, type Shift, type Status } from "@/lib/schools";
+import { SHIFTS, doctorName, plural, statusOf, today, type Shift, type Status } from "@/lib/schools";
 import { StatusPill } from "@/components/StatusPill";
+import { askDoctor, DoctorChips } from "@/components/DoctorPicker";
 
 export const Route = createFileRoute("/lista/$id")({
   head: () => ({
@@ -88,17 +88,19 @@ function ListPage() {
     setQuick("");
   };
 
-  const toggle = (t: Task) => {
-    updateTask(list.id, t.id, { done: !t.done, absent: false });
-    if (!t.done) toast.success("Atendido", { duration: 1500 });
+  const setSt = (t: Task, next: Status) => {
+    useStore.getState().setStatus(list.id, t.id, next);
+    if (next === "atendido") askDoctor(list.id, t.id, t.title);
   };
+  const toggle = (t: Task) => setSt(t, t.done ? "espera" : "atendido");
 
   const cycle = (t: Task) => {
     const next: Status = { espera: "atendido", atendido: "faltou", faltou: "espera" }[statusOf(t)] as Status;
-    updateTask(list.id, t.id, { done: next === "atendido", absent: next === "faltou" });
+    setSt(t, next);
   };
-  const c = { total: list.tasks.length, espera: 0, atendido: 0, faltou: 0 };
+  const c = { total: 0, espera: 0, atendido: 0, faltou: 0 };
   list.tasks.forEach((t) => c[statusOf(t)]++);
+  c.total = c.espera + c.atendido;
   const canDrag = !query && filter === "all";
 
   return (
@@ -108,13 +110,13 @@ function ListPage() {
           <Link to="/" aria-label="Voltar" className="grid h-11 w-11 place-items-center rounded-full hover:bg-muted"><ArrowLeft className="h-6 w-6" /></Link>
           <div className="min-w-0 px-1">
             <h1 className="truncate text-2xl font-bold tracking-tight">{list.name}</h1>
-            <p className="text-sm text-muted-foreground">{c.atendido} de {c.total} atendidos</p>
+            <p className="text-sm text-muted-foreground">{c.atendido} de {plural(c.total, "aluno", "alunos")} {c.atendido === 1 ? "atendido" : "atendidos"}</p>
           </div>
           <button aria-label="Editar nome" onClick={() => setRenaming(true)} className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:bg-muted"><Pencil className="h-5 w-5" /></button>
           <ThemeToggle />
         </div>
         <div className="mt-3 grid grid-cols-4 gap-2 px-1 text-center">
-          {([["Total", c.total, "bg-muted"], ["Em espera", c.espera, "bg-accent text-accent-foreground"], ["Atendidos", c.atendido, "bg-success text-primary-foreground"], ["Faltou", c.faltou, "bg-destructive text-destructive-foreground"]] as const).map(([l, n, k]) => (
+          {([[c.total === 1 ? "Aluno" : "Alunos", c.total, "bg-muted"], ["Em espera", c.espera, "bg-accent text-accent-foreground"], [c.atendido === 1 ? "Atendido" : "Atendidos", c.atendido, "bg-success text-primary-foreground"], ["Faltou", c.faltou, "bg-destructive text-destructive-foreground"]] as const).map(([l, n, k]) => (
             <div key={l} className={cn("rounded-xl py-1.5", k)}><p className="text-lg font-bold leading-tight">{n}</p><p className="text-[11px]">{l}</p></div>
           ))}
         </div>
@@ -191,6 +193,12 @@ function ListPage() {
           else addTask(list.id, { ...up, shift, attDate: today() });
         }}
         onDelete={sheet.task ? () => deleteTask(list.id, sheet.task!.id) : undefined}
+        extra={sheet.task && list.tasks.find((x) => x.id === sheet.task!.id)?.done ? (
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium">Médico do atendimento</p>
+            <DoctorChips value={list.tasks.find((x) => x.id === sheet.task!.id)?.doctor} onPick={(i) => useStore.getState().setDoctor(list.id, sheet.task!.id, i)} />
+          </div>
+        ) : undefined}
       />
     </div>
   );
@@ -230,6 +238,9 @@ function TaskRow({ task, canDrag, onToggle, onCycle, onStar, onOpen }: {
       </button>
       <button onClick={onOpen} className="min-w-0 flex-1 py-3 text-left">
         <p className={cn("truncate text-base font-medium transition-colors", task.done && "text-muted-foreground line-through")}>{task.title}</p>
+        {task.done && task.doctor !== undefined && (
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{doctorName(useStore.getState().doctors, task.doctor)}</p>
+        )}
         {(due || task.note) && (
           <p className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
             {due && <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{due}</span>}

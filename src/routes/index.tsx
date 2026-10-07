@@ -100,7 +100,7 @@ function Home() {
               <p className="px-1 text-sm text-muted-foreground">Todas as escolas estão em grupos.</p>
             ) : (
               <div className="space-y-3">
-                {loose.map((l, i) => <ListCard key={l.id} list={l} index={i} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
+                {loose.map((l, i) => <ListCard key={l.id} list={l} index={i} siblings={loose.map((x) => x.id)} onEdit={() => setEditing(l)} onDelete={() => setDeleting(l)} />)}
               </div>
             )}
           </section>

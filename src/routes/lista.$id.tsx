@@ -119,7 +119,7 @@ function ListPage() {
           <Link to="/" aria-label="Voltar" className="grid h-11 w-11 place-items-center rounded-full hover:bg-muted"><ArrowLeft className="h-6 w-6" /></Link>
           <div className="min-w-0 px-1">
             <h1 className="truncate text-2xl font-bold tracking-tight">{listTitle(list)}</h1>
-            <p className="text-sm text-muted-foreground">{c.atendido} de {plural(c.total, "aluno", "alunos")} {c.atendido === 1 ? "atendido" : "atendidos"}</p>
+            <p className="text-sm text-muted-foreground">{plural(c.atendido, "atendido", "atendidos")} de {plural(c.total, "aluno", "alunos")}</p>
           </div>
           <button aria-label="Editar nome" onClick={() => setRenaming(true)} className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:bg-muted"><Pencil className="h-5 w-5" /></button>
           <ThemeToggle />

@@ -36,7 +36,7 @@ function Viewer() {
   const lists = parsed.lists ?? [];
   const groups = parsed.groups ?? [];
   const doctors = parsed.doctors ?? [];
-  const waiting = lists.reduce((n, l) => n + l.tasks.filter((t) => !t.done && !t.absent).length, 0);
+  const waiting = lists.reduce((n, l) => n + l.tasks.filter((t) => statusOf(t) === "espera").length, 0);
   const byShift = [
     { k: "manha", label: "Manhã", ls: lists.filter((l) => l.shift === "manha") },
     { k: "tarde", label: "Tarde", ls: lists.filter((l) => l.shift === "tarde") },

@@ -104,7 +104,7 @@ function ListPage() {
   const toggle = (t: Task) => setSt(t, t.done ? "espera" : "atendido");
 
   const cycle = (t: Task) => {
-    const next: Status = { espera: "atendido", atendido: "faltou", faltou: "espera" }[statusOf(t)] as Status;
+    const next: Status = ({ espera: "atendido", atendido: "faltou", faltou: "espera" } as Record<string, Status>)[statusOf(t)] ?? "espera";
     setSt(t, next);
   };
   const c = { total: 0, espera: 0, atendido: 0, faltou: 0, naochegou: 0, foiembora: 0 };

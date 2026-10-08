@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowLeft, Download, Share2 } from "lucide-react";
 import { useStore, useHydrated, type Task } from "@/lib/store";
-import { SCHOOLS, SHIFTS, STATUS_LABEL, doctorName, fmtDate, plural, shiftLabel, statusOf, today, type Shift } from "@/lib/schools";
+import { SCHOOLS, SHIFTS, STATUS_LABEL, doctorName, listTitle, namedDoctors, fmtDate, plural, shiftLabel, statusOf, today, type Shift } from "@/lib/schools";
 import { buildPdf, downloadPdf, sharePdf, type PdfSection } from "@/lib/pdf";
 import { cn } from "@/lib/utils";
 import { StatusPill } from "@/components/StatusPill";
@@ -24,12 +24,12 @@ export const Route = createFileRoute("/relatorios")({
 type Tab = "escola" | "turno" | "medico" | "geral";
 type Row = Task & { school?: string };
 const count = (ts: Task[]) => {
-  const c = { total: ts.length, espera: 0, atendido: 0, faltou: 0 };
+  const c = { total: ts.length, espera: 0, atendido: 0, faltou: 0, naochegou: 0, foiembora: 0 };
   ts.forEach((t) => c[statusOf(t)]++);
   return c;
 };
 const totalsLine = (c: ReturnType<typeof count>) =>
-  `${plural(c.total - c.faltou, "aluno", "alunos")} · ${c.espera} em espera · ${plural(c.atendido, "atendido", "atendidos")} · ${plural(c.faltou, "falta", "faltas")}`;
+  `${plural(c.total - c.faltou, "aluno", "alunos")} · ${c.espera} em espera · ${plural(c.atendido, "atendido", "atendidos")} · ${plural(c.faltou, "falta", "faltas")}${c.naochegou ? ` · ${c.naochegou} não chegou` : ""}${c.foiembora ? ` · ${c.foiembora} foi embora` : ""}`;
 
 function Reports() {
   const hydrated = useHydrated();
@@ -43,21 +43,21 @@ function Reports() {
 
   const byDate = (ts: Task[], ls?: Task["shift"]) => ts.filter((t) => (t.attDate ?? "") === date).map((t) => (ls ? { ...t, shift: ls } : t));
   const schools = useMemo(
-    () => lists.map((l) => ({ name: l.name, tasks: byDate(l.tasks, l.shift).map((t) => ({ ...t, school: l.name })) as Row[] })).filter((s) => s.tasks.length),
+    () => lists.map((l) => ({ name: listTitle(l), tasks: byDate(l.tasks, l.shift).map((t) => ({ ...t, school: l.name })) as Row[] })).filter((s) => s.tasks.length),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lists, date],
   );
 
   const attended = schools.flatMap((s) => s.tasks).filter((t) => t.done);
-  const docSections = [...doctors.map((_, i) => i), -1]
-    .map((i) => ({ name: i < 0 ? "Sem médico" : doctorName(doctors, i), doc: true, tasks: attended.filter((t) => (i < 0 ? t.doctor === undefined : t.doctor === i)) as Row[] }))
+  const docSections = [...namedDoctors(doctors).map((d) => d.i), -1]
+    .map((i) => ({ name: i < 0 ? "Sem médico" : doctorName(doctors, i), doc: true, tasks: attended.filter((t) => (i < 0 ? t.doctor === undefined || !doctorName(doctors, t.doctor) : t.doctor === i)) as Row[] }))
     .filter((d) => d.name !== "Sem médico" || d.tasks.length);
   const docLine = (ts: Row[]) => `${plural(ts.length, "atendimento", "atendimentos")} · Manhã: ${ts.filter((t) => t.shift === "manha").length} · Tarde: ${ts.filter((t) => t.shift === "tarde").length}`;
   let sections: { name: string; tasks: Row[]; doc?: boolean }[] = [];
   let title = "";
   if (tab === "escola") {
-    const l = lists.find((x) => x.name === school);
-    sections = [{ name: school, tasks: l ? byDate(l.tasks, l.shift) : [] }];
+    const ls = lists.filter((x) => x.name === school);
+    sections = ls.length ? ls.map((l) => ({ name: listTitle(l), tasks: byDate(l.tasks, l.shift) })) : [{ name: school, tasks: [] }];
     title = "Relatório por escola";
   } else if (tab === "turno") {
     sections = schools.map((s) => ({ ...s, tasks: s.tasks.filter((t) => t.shift === shift) })).filter((s) => s.tasks.length);

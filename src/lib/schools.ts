@@ -20,9 +20,12 @@ export const SHIFTS: { key: Shift; label: string }[] = [
 ];
 export const shiftLabel = (s?: string) => SHIFTS.find((x) => x.key === s)?.label ?? "—";
 
-export type Status = "espera" | "atendido" | "faltou";
-export const STATUS_LABEL: Record<Status, string> = { espera: "Em espera", atendido: "Atendidos", faltou: "Faltou" };
-export const statusOf = (t: { done: boolean; absent?: boolean | undefined }): Status => (t.done ? "atendido" : t.absent ? "faltou" : "espera");
+export type Status = "espera" | "atendido" | "faltou" | "naochegou" | "foiembora";
+export const STATUS_LIST: Status[] = ["espera", "atendido", "faltou", "naochegou", "foiembora"];
+export const STATUS_LABEL: Record<Status, string> = { espera: "Em espera", atendido: "Atendido", faltou: "Faltou", naochegou: "Não chegou", foiembora: "Foi embora" };
+export const statusOf = (t: { done: boolean; absent?: boolean | undefined; extra?: string | undefined }): Status =>
+  t.done ? "atendido" : t.absent ? "faltou" : t.extra === "naochegou" ? "naochegou" : t.extra === "foiembora" ? "foiembora" : "espera";
+export const listTitle = (l: { name: string; shift?: string | undefined }) => (l.shift === "manha" || l.shift === "tarde" ? `${l.name} — ${shiftLabel(l.shift).toLocaleUpperCase("pt-BR")}` : l.name);
 export const today = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -31,4 +34,5 @@ export const fmtDate = (iso: string) => new Date(`${iso}T00:00`).toLocaleDateStr
 
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 export const doctorName = (doctors: string[], i?: number) =>
-  i === undefined ? "" : doctors[i]?.trim() || `Médico ${i + 1}`;
+  i === undefined ? "" : doctors[i]?.trim() ?? "";
+export const namedDoctors = (doctors: string[]) => doctors.map((n, i) => ({ i, name: n.trim() })).filter((d) => d.name);

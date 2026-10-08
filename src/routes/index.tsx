@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, ListChecks, Folder, FolderPlus, ChevronRight, Search, FileText, School, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SCHOOLS, norm } from "@/lib/schools";
+import { SCHOOLS, SHIFTS, norm } from "@/lib/schools";
 import { useStore, useHydrated, type TaskList } from "@/lib/store";
 import { NameDialog } from "@/components/NameDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -34,10 +34,10 @@ function Home() {
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [sq, setSq] = useState("");
   const navigate = useNavigate();
-  const openSchool = (name: string) => {
-    const ex = useStore.getState().lists.find((l) => l.name === name);
-    const id = ex ? ex.id : addList(name);
-    setCreating(false); setSq("");
+  const [picked, setPicked] = useState<string | null>(null);
+  const openSchool = (name: string, shift: "manha" | "tarde") => {
+    const id = useStore.getState().openSchool(name, shift);
+    setCreating(false); setSq(""); setPicked(null);
     navigate({ to: "/lista/$id", params: { id } });
   };
   const [editing, setEditing] = useState<TaskList | null>(null);
@@ -123,11 +123,23 @@ function Home() {
           </div>
           <ul className="-mx-2 min-h-0 flex-1 overflow-y-auto">
             {SCHOOLS.filter((n) => norm(n).includes(norm(sq.trim()))).map((n) => (
-              <li key={n}><button onClick={() => openSchool(n)} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-muted">
+              <li key={n}><button onClick={() => setPicked(n)} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-muted">
                 <School className="h-5 w-5 shrink-0 text-primary" /><span className="text-sm font-medium">{n}</span>
               </button></li>
             ))}
           </ul>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!picked} onOpenChange={(o) => !o && setPicked(null)}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader><DialogTitle>{picked}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Escolha o turno da lista:</p>
+          <div className="flex gap-2">
+            {SHIFTS.map((x) => (
+              <button key={x.key} onClick={() => picked && openSchool(picked, x.key as "manha" | "tarde")}
+                className="h-14 flex-1 rounded-xl bg-primary text-lg font-semibold text-primary-foreground">{x.label}</button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
       <NameDialog open={creatingGroup} onOpenChange={setCreatingGroup} title="Novo grupo" confirmLabel="Criar" placeholder="Nome do grupo" onSubmit={(n) => addGroup(n)} />

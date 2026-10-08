@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Pencil, Search, Star, GripVertical, Plus, Calendar, StickyNote, Check } from "lucide-react";
+import { ArrowLeft, Pencil, Search, X, GripVertical, Plus, Calendar, StickyNote, Check } from "lucide-react";
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent,
 } from "@dnd-kit/core";
@@ -11,7 +11,9 @@ import { NameDialog } from "@/components/NameDialog";
 import { TaskSheet } from "@/components/TaskSheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { SHIFTS, doctorName, plural, statusOf, today, type Shift, type Status } from "@/lib/schools";
+import { useNavigate } from "@tanstack/react-router";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { SHIFTS, STATUS_LIST, STATUS_LABEL, doctorName, listTitle, plural, statusOf, today, type Shift, type Status } from "@/lib/schools";
 import { StatusPill } from "@/components/StatusPill";
 import { askDoctor, DoctorChips } from "@/components/DoctorPicker";
 
@@ -55,7 +57,14 @@ function ListPage() {
   );
 
   const shift: Shift = list?.shift === "manha" || list?.shift === "tarde" ? list.shift : autoShift;
-  const setShift = (s: Shift) => { if (list) useStore.getState().setListShift(list.id, s as "manha" | "tarde"); };
+  const navigate = useNavigate();
+  // Each school+shift is its own list: switching shift opens the other list, never mixes data.
+  const setShift = (s: Shift) => {
+    if (!list || s === shift) return;
+    if (list.shift !== "manha" && list.shift !== "tarde") { useStore.getState().setListShift(list.id, s as "manha" | "tarde"); return; }
+    const nid = useStore.getState().openSchool(list.name, s as "manha" | "tarde");
+    navigate({ to: "/lista/$id", params: { id: nid } });
+  };
   const visible = useMemo(() => {
     if (!list) return [];
     const q = query.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/\p{Diacritic}/gu, "");
@@ -95,12 +104,12 @@ function ListPage() {
   const toggle = (t: Task) => setSt(t, t.done ? "espera" : "atendido");
 
   const cycle = (t: Task) => {
-    const next: Status = { espera: "atendido", atendido: "faltou", faltou: "espera" }[statusOf(t)] as Status;
+    const next: Status = ({ espera: "atendido", atendido: "faltou", faltou: "espera" } as Record<string, Status>)[statusOf(t)] ?? "espera";
     setSt(t, next);
   };
-  const c = { total: 0, espera: 0, atendido: 0, faltou: 0 };
+  const c = { total: 0, espera: 0, atendido: 0, faltou: 0, naochegou: 0, foiembora: 0 };
   list.tasks.forEach((t) => c[statusOf(t)]++);
-  c.total = c.espera + c.atendido;
+  c.total = list.tasks.length - c.faltou;
   const canDrag = !query && filter === "all";
 
   return (
@@ -109,8 +118,8 @@ function ListPage() {
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1">
           <Link to="/" aria-label="Voltar" className="grid h-11 w-11 place-items-center rounded-full hover:bg-muted"><ArrowLeft className="h-6 w-6" /></Link>
           <div className="min-w-0 px-1">
-            <h1 className="truncate text-2xl font-bold tracking-tight">{list.name}</h1>
-            <p className="text-sm text-muted-foreground">{c.atendido} de {plural(c.total, "aluno", "alunos")} {c.atendido === 1 ? "atendido" : "atendidos"}</p>
+            <h1 className="truncate text-2xl font-bold tracking-tight">{listTitle(list)}</h1>
+            <p className="text-sm text-muted-foreground">{plural(c.atendido, "atendido", "atendidos")} de {plural(c.total, "aluno", "alunos")}</p>
           </div>
           <button aria-label="Editar nome" onClick={() => setRenaming(true)} className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:bg-muted"><Pencil className="h-5 w-5" /></button>
           <ThemeToggle />
@@ -158,7 +167,7 @@ function ListPage() {
                   key={t.id} task={t} canDrag={canDrag}
                   onToggle={() => toggle(t)}
                   onCycle={() => cycle(t)}
-                  onStar={() => updateTask(list.id, t.id, { important: !t.important })}
+                  onPick={(st) => setSt(t, st)}
                   onOpen={() => setSheet({ open: true, task: t })}
                 />
               ))}
@@ -211,8 +220,8 @@ function formatDue(t: Task) {
   return t.time ? `${s}, ${t.time}` : s;
 }
 
-function TaskRow({ task, canDrag, onToggle, onCycle, onStar, onOpen }: {
-  task: Task; canDrag: boolean; onToggle: () => void; onCycle: () => void; onStar: () => void; onOpen: () => void;
+function TaskRow({ task, canDrag, onToggle, onCycle, onPick, onOpen }: {
+  task: Task; canDrag: boolean; onToggle: () => void; onCycle: () => void; onPick: (s: Status) => void; onOpen: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: !canDrag });
   const due = formatDue(task);
@@ -249,9 +258,18 @@ function TaskRow({ task, canDrag, onToggle, onCycle, onStar, onOpen }: {
         )}
       </button>
       <StatusPill s={statusOf(task)} onClick={onCycle} />
-      <button aria-label="Importante" onClick={onStar} className="grid h-12 w-12 shrink-0 place-items-center">
-        <Star className={cn("h-6 w-6 transition-colors", task.important ? "animate-pop fill-star text-star" : "text-muted-foreground/60")} />
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="Alterar status" className="grid h-12 w-12 shrink-0 place-items-center text-muted-foreground">
+          <X className="h-6 w-6" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {STATUS_LIST.map((st) => (
+            <DropdownMenuItem key={st} className="h-11" onClick={() => onPick(st)}>
+              <StatusPill s={st} /> {statusOf(task) === st && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </li>
   );
 }

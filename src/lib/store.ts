@@ -15,6 +15,7 @@ export type Task = {
   shift?: "manha" | "tarde" | "noite" | undefined;
   attDate?: string | undefined;
   doctor?: number | undefined;
+  extra?: "naochegou" | "foiembora" | undefined;
   createdAt: number;
 };
 
@@ -38,7 +39,8 @@ type State = {
   doctors: string[];
   setDoctors: (names: string[]) => void;
   moveList: (id: string, dir: -1 | 1, ids: string[]) => void;
-  setStatus: (listId: string, taskId: string, st: "espera" | "atendido" | "faltou") => void;
+  setStatus: (listId: string, taskId: string, st: "espera" | "atendido" | "faltou" | "naochegou" | "foiembora") => void;
+  openSchool: (name: string, shift: "manha" | "tarde") => string;
   setDoctor: (listId: string, taskId: string, doctor: number | undefined) => void;
   addList: (name: string, groupId?: string) => string;
   addGroup: (name: string) => string;
@@ -62,7 +64,7 @@ const mapList = (lists: TaskList[], id: string, fn: (l: TaskList) => TaskList) =
 
 export const useStore = create<State>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       lists: [],
       groups: [],
       theme: "light",
@@ -84,8 +86,9 @@ export const useStore = create<State>()(
           lists: mapList(s.lists, listId, (l) => {
             const t = l.tasks.find((x) => x.id === taskId);
             if (!t) return l;
-            const nt: Task = { ...t, done: st === "atendido", absent: st === "faltou", doctor: st === "atendido" ? t.doctor : undefined };
-            const rank = (x: Task) => (x.done ? 1 : x.absent ? 2 : 0);
+            const nt: Task = { ...t, done: st === "atendido", absent: st === "faltou", doctor: st === "atendido" ? t.doctor : undefined,
+              extra: st === "naochegou" || st === "foiembora" ? st : undefined };
+            const rank = (x: Task) => (x.done ? 1 : x.absent ? 4 : x.extra === "naochegou" ? 2 : x.extra === "foiembora" ? 3 : 0);
             const rest = l.tasks.filter((x) => x.id !== taskId);
             const r = rank(nt);
             let pos = rest.length;
@@ -94,6 +97,18 @@ export const useStore = create<State>()(
             return { ...l, tasks: rest };
           }),
         })),
+      openSchool: (name, shift) => {
+        const ls = get().lists;
+        const ex = ls.find((l) => l.name === name && l.shift === shift)
+          ?? ls.find((l) => l.name === name && l.shift !== "manha" && l.shift !== "tarde");
+        if (ex) {
+          if (ex.shift !== shift) set((s) => ({ lists: mapList(s.lists, ex.id, (l) => ({ ...l, shift })) }));
+          return ex.id;
+        }
+        const id = uid();
+        set((s) => ({ lists: [...s.lists, { id, name, tasks: [], shift, createdAt: Date.now() }] }));
+        return id;
+      },
       setDoctor: (listId, taskId, doctor) =>
         set((s) => ({
           lists: mapList(s.lists, listId, (l) => ({ ...l, tasks: l.tasks.map((t) => (t.id === taskId && t.done ? { ...t, doctor } : t)) })),

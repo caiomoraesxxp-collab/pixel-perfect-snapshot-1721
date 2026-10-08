@@ -5,7 +5,9 @@ export function StatusPill({ s, onClick }: { s: Status; onClick?: () => void }) 
   const cls = cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
     s === "atendido" && "bg-success text-primary-foreground",
     s === "faltou" && "bg-destructive text-destructive-foreground",
-    s === "espera" && "bg-muted text-foreground ring-1 ring-primary/40");
+    s === "espera" && "bg-muted text-foreground ring-1 ring-primary/40",
+    s === "naochegou" && "bg-primary/20 text-foreground ring-1 ring-primary",
+    s === "foiembora" && "bg-foreground/75 text-background");
   return onClick
     ? <button onClick={onClick} className={cn(cls, "h-9 px-3")}>{STATUS_LABEL[s]}</button>
     : <span className={cls}>{STATUS_LABEL[s]}</span>;

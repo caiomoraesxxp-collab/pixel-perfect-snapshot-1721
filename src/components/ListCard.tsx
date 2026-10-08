@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { MoreVertical, Pencil, Trash2, FolderInput, FolderMinus, Folder, ChevronUp, ChevronDown } from "lucide-react";
 import { useStore, type TaskList } from "@/lib/store";
+import { listTitle } from "@/lib/schools";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuSeparator,
@@ -19,7 +20,7 @@ export function ListCard({ list: l, index, onEdit, onDelete, siblings }: {
   return (
     <div className="animate-rise flex items-center rounded-2xl bg-card shadow-soft" style={{ animationDelay: `${index * 30}ms` }}>
       <Link to="/lista/$id" params={{ id: l.id }} className="min-w-0 flex-1 p-4">
-        <h3 className="truncate text-lg font-semibold">{l.name}</h3>
+        <h3 className="truncate text-lg font-semibold">{listTitle(l)}</h3>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {total} {total === 1 ? "aluno" : "alunos"} · {done} atendido{done === 1 ? "" : "s"}
         </p>
